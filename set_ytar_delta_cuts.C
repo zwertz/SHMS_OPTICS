@@ -39,7 +39,7 @@ void set_ytar_delta_cuts(Int_t nrun=1813,Int_t FileID=-2) {
  Int_t nb=50;
  TColor::CreateGradientColorTable(Number,Len,Red,Green,Blue,nb);
  //  Get info for that optics run
- TString OpticsFile = "list_of_optics_run.dat";
+ TString OpticsFile = "DATfiles/list_of_optics_run.dat";
    ifstream file_optics(OpticsFile.Data());
  TString opticsline;
   TString OpticsID="";

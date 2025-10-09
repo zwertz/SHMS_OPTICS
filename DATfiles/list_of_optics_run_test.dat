@@ -1,0 +1,15 @@
+RunNum,OpticsID,CentralAngle,NumFoil,SieveFlag,ndelcut
+ztar_foil
+delcut
+delwidth
+
+RUN: 22044, p=3.6 GeV/c, Mag, SHMS_Angle = 17.005, Carbon 3%
+22044,22044,17.0,1,1,6,0.0
+0.0
+-10,-8.,-5.,0.,5.,10.
+
+RUN: 22045, p=3.6 GeV/c, Mag, SHMS_Angle = 17.005, Carbon +/- 10 cm
+22045,22045,17.005,3,1,5
+10.0,0.0,-10.0
+-4.,0.,4.,8.,17.5
+2.,2.,2.,2.,7.5

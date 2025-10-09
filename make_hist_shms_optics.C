@@ -27,10 +27,7 @@
 #include <fstream>
 using namespace std;
 
-void make_hist_shms_optics_v2(Int_t nrun=1813,Bool_t CutYtarFlag=kTRUE,Bool_t CutYpFpYFpFlag=kTRUE,Bool_t CutXpFpXFpFlag=kTRUE,Int_t FileID=-2){
-  //Holly says these are good starting
-  Double_t yMP = -0.03;//0.0;
-  Double_t xMP = -0.126;//0.0;
+void make_hist_shms_optics(Int_t nrun=1813,Bool_t CutYtarFlag=kTRUE,Bool_t CutYpFpYFpFlag=kTRUE,Bool_t CutXpFpXFpFlag=kTRUE,Int_t FileID=-2){
   gStyle->SetPalette(1,0);
   gStyle->SetOptStat(1000011);
   gStyle->SetOptFit(11);
@@ -106,7 +103,7 @@ void make_hist_shms_optics_v2(Int_t nrun=1813,Bool_t CutYtarFlag=kTRUE,Bool_t Cu
   TString outputhist;
   inputroot = Form("ROOTfiles/LAD_COIN/PRODUCTION/LAD_Optics_%s_0_0_%d.root",OpticsID.Data(),FileID);
 
-  outputhist=Form("hist/Optics_%s_%d_hist_v2.root",OpticsID.Data(),FileID);
+  outputhist=Form("hist/Optics_%s_%d_hist.root",OpticsID.Data(),FileID);
   cout << " input root = " << inputroot << endl;
   TObjArray HList(0);
   //
@@ -269,57 +266,10 @@ void make_hist_shms_optics_v2(Int_t nrun=1813,Bool_t CutYtarFlag=kTRUE,Bool_t Cu
   HList.Add(hxbpm_tar);
   TH1F *hybpm_tar = new TH1F("hybpm_tar",Form("Run %d ; Ybpm_tar ; Counts",nrun),100,-2.,2.);
   HList.Add(hybpm_tar);
-
-  //added text to read in matrix elements directly:
-  //parse the input matrix elements
-  //string coeffsfilename="NewFits/hsv_fit_global.dat";
-  string coeffsfilename="NewFits/shms-2019-newopt-Jan19.dat";
-  cout << "New Matrix incoming line 279" << endl;
-  ifstream coeffsfile(coeffsfilename.c_str());
-  TString currentline;
-  int num_recon_terms=0;
-
-  vector<double> xptarcoeffs;
-  vector<double> yptarcoeffs;
-  vector<double> ytarcoeffs;
-  vector<double> deltacoeffs;
-  vector<int> xfpexpon;
-  vector<int> xpfpexpon;
-  vector<int> yfpexpon;
-  vector<int> ypfpexpon;
-  vector<int> xtarexpon;
-  
-   while( currentline.ReadLine(coeffsfile,kFALSE) && !currentline.BeginsWith(" ----") ){
-    
-    TString sc1(currentline(1,16));
-    TString sc2(currentline(17,16));
-    TString sc3(currentline(33,16));
-    TString sc4(currentline(49,16));
-    
-    xptarcoeffs.push_back(sc1.Atof());
-    ytarcoeffs.push_back(sc2.Atof());
-    yptarcoeffs.push_back(sc3.Atof());
-    deltacoeffs.push_back(sc4.Atof());
-    
-    int expontemp[5];
-
-    for(int expon=0; expon<5; expon++){
-      TString stemp(currentline(66+expon,1));
-      expontemp[expon] = stemp.Atoi();
-    }
-
-    xfpexpon.push_back(expontemp[0]);
-    xpfpexpon.push_back(expontemp[1]);
-    yfpexpon.push_back(expontemp[2]);
-    ypfpexpon.push_back(expontemp[3]);
-    xtarexpon.push_back(expontemp[4]);
-
-
-    cout << num_recon_terms << " " <<  xptarcoeffs[num_recon_terms] << " " << ytarcoeffs[num_recon_terms] << " " <<  yptarcoeffs[num_recon_terms] << " " << deltacoeffs[num_recon_terms] << " " << xfpexpon[num_recon_terms] << " " << xpfpexpon[num_recon_terms] << " " << yfpexpon[num_recon_terms] << " " << ypfpexpon[num_recon_terms] << " " << xtarexpon[num_recon_terms] << " " << endl;
-
-    num_recon_terms++;   
-  }
-  ////////////////////////////////////////////////////////////
+  TH2F *hZtarFrXa = new TH2F("hZtarFrXa",Form("Run %d ; fr_xa ; Ztar",nrun),100,-0.35,0.25,100,-11.,11.);
+  HList.Add(hZtarFrXa);
+  TH2F *hZtarFrYa = new TH2F("hZtarFrYa",Form("Run %d ; fr_ya ; Ztar",nrun),100,-0.35,0.25,100,-11.,11.);
+  HList.Add(hZtarFrYa);
   //
   vector <TH2F*> hYsDelta;
   hYsDelta.resize(NumFoil);
@@ -365,10 +315,10 @@ void make_hist_shms_optics_v2(Int_t nrun=1813,Bool_t CutYtarFlag=kTRUE,Bool_t Cu
     HList.Add(hXsDelta[nc]);
     hYpFpYFp[nc] = new TH2F(Form("hYpFpYFp_%d",nc),Form("Run %d Foil %d; Ypfp ; Yfp",nrun,nc),100,-.05,.05,100,-35.,35.);
     HList.Add(hYpFpYFp[nc]);
-     hXpFpXFp[nc] = new TH2F(Form("hXpFpXFp_%d",nc),Form("MC Run %d Foil %4.1f; Xpfp ; Xfp",nrun,ztar_foil[nc]),100,-.1,.1,100,-50.,50.);
-     HList.Add(hXpFpXFp[nc]);
-     hXFpYFp[nc] = new TH2F(Form("hXFpYFp_%d",nc),Form("MC Run %d Foil %4.1f; Yfp ; Xfp",nrun,ztar_foil[nc]),100,-40.,40,100,-50.,50.);
-     HList.Add(hXFpYFp[nc]);
+    hXpFpXFp[nc] = new TH2F(Form("hXpFpXFp_%d",nc),Form("MC Run %d Foil %4.1f; Xpfp ; Xfp",nrun,ztar_foil[nc]),100,-.1,.1,100,-50.,50.);
+    HList.Add(hXpFpXFp[nc]);
+    hXFpYFp[nc] = new TH2F(Form("hXFpYFp_%d",nc),Form("MC Run %d Foil %4.1f; Yfp ; Xfp",nrun,ztar_foil[nc]),100,-40.,40,100,-50.,50.);
+    HList.Add(hXFpYFp[nc]);
     for  (Int_t nd=0;nd<ndelcut;nd++) {
       hYsXs_DelCut[nc][nd]  = new TH2F(Form("hYsXs_Foil_%d_DelCut_%d",nc,nd),Form("Run %d Foil %d DelCut %3.1f; Ys ; Xs",nrun,nc,delcut[nd]),50,-12,12,100,-15.,15.);
       HList.Add(hYsXs_DelCut[nc][nd]);
@@ -389,92 +339,35 @@ void make_hist_shms_optics_v2(Int_t nrun=1813,Bool_t CutYtarFlag=kTRUE,Bool_t Cu
   //
   // loop over entries
   Long64_t nentries = tsimc->GetEntries();
-   for (int i = 0; i < nentries; i++) {
-     tsimc->GetEntry(i);
-     if (i%50000==0) cout << " Entry = " << i << endl;
-     if (etracknorm>.8 && sumnpe > 6. && delta>-10 && delta<10) {
-       hxbpm_tar->Fill(xbpm_tar);
-       hybpm_tar->Fill(ybpm_tar);		  
-     }} //
-   Double_t xbeam = -hxbpm_tar->GetMean(); // horizontal beam in Hall coordinates
-   Double_t ybeam = hybpm_tar->GetMean();
-   cout << " xbeam = " << xbeam << " ybeam = " << ybeam << endl;
-
-   
-
-   CentAngle *= 3.14/180.;
-   cout << " start loop " << nentries << endl;
+  cout << " start loop " << nentries << endl;
   for (int i = 0; i < nentries; i++) {
-    tsimc->GetEntry(i);
-
-
-    //reactx = xbeam - (frx+0.01);   
-    //reacty = -ybeam - (fry+0.01);
-   //if (CentAngle*180/3.14 > 25){reacty = -ybeam - (fry+0.005);}
-    
-   //double xtarT = -reacty - xMP - xptarT*ztar_foil[nf_found]*TMath::Cos(CentAngle);
-    
-   // Calculate corrections & recalculate ,,,track parameters
-    Double_t ytartemp = 0.0,yptartemp=0.0,xptartemp=0.0,deltatemp=0.0;
-    Double_t etemp;
-    for( int icoeff=0; icoeff<num_recon_terms; icoeff++ ){
-      etemp= 
-	pow( xfp / 100.0, xfpexpon[icoeff] ) * 
-	pow( yfp / 100.0, yfpexpon[icoeff] ) * 
-	pow( xpfp, xpfpexpon[icoeff] ) * 
-	pow( ypfp, ypfpexpon[icoeff] ) * 
-	pow( xtar/100., xtarexpon[icoeff] );
-      deltatemp += deltacoeffs[icoeff] * etemp;
-      ytartemp += ytarcoeffs[icoeff] * etemp;
-      yptartemp += yptarcoeffs[icoeff] * etemp;
-      xptartemp += xptarcoeffs[icoeff] *etemp; 
-    } // for icoeffold loop
-
-    
-    ///////////////////////////////////////////////////////////////////
-    //cout << "deltatemp: " << deltatemp << endl;
-    xsieve = xtar + xptartemp*253;
-    Double_t delta_per = deltatemp*100.0;
-    ysieve = ytartemp*100+yptartemp*253.-(0.019+40.*.01*0.052)*delta_per+(0.00019+40*.01*.00052)*delta_per*delta_per;
-    //cout << "delta_per: " << delta_per << endl;
-    //reactx = xbeam - (frx+0.01);
-    ytartemp *=100;
-    //Double_t ztarg=(ytar_off-beam_org(0)*(costheta-yptar*sintheta))/(-sintheta-yptar*costheta);//from code
-    Double_t ztarg=(ytartemp-yMP-reactx*(cos(CentAngle)-yptartemp*sin(CentAngle)))/(-sin(CentAngle)-cos(CentAngle)*yptartemp);//mine
-    //Double_t ztarg=(ytartemp-yMP-0*(cos(CentAngle)-yptartemp*sin(CentAngle)))/(-sin(CentAngle)-cos(CentAngle)*yptartemp);//mine, reactz
-    if (i%50000==0) cout << " Entry = " << i << endl;
+  tsimc->GetEntry(i);
+  if (i%50000==0) cout << " Entry = " << i << endl;
+  hxbpm_tar->Fill(xbpm_tar);
+  hybpm_tar->Fill(ybpm_tar);
+  hZtarFrXa->Fill(fr_xa,reactz);
+  hZtarFrYa->Fill(fr_ya,reactz);
     if (sumnpe > 6.) hetot->Fill(etracknorm);
     if (etracknorm>.8) hngsum->Fill(sumnpe);
-    //cout << " Sumnpe: " << sumnpe << " delta_per: " << endl;
-    //if (sumnpe > 6. && delta_per>-15 && delta_per<24) {
     if (sumnpe > 6. && delta>-15 && delta<24) {
-      //if (delta_per>-10 && delta_per<24) hytar->Fill(ytartemp);
-      hytar->Fill(ytar);
-      hztar->Fill(reactz);
-      hztarg->Fill(ztarg);
-      // hztarCalc->Fill(ztarCalc);
-      //if (delta>-10 && delta<24) hztar->Fill(reactz);
-      //if (delta_per>-10 && delta_per<24) hztar->Fill(ztarg);
-      if (delta>-10 && delta<24) hztar->Fill(ztarg);
-      hXptarDelta->Fill(xptartemp,delta_per);
-      hYptarDelta->Fill(yptartemp,delta_per);
-      hYtarDelta->Fill(ytartemp,delta_per);
-      hYtarYptar->Fill(yptartemp,ytartemp);
+      if (delta>-10 && delta<24) hytar->Fill(ytar);
+      if (delta>-10 && delta<24) hztar->Fill(reactz);
+      hXptarDelta->Fill(xptar,delta);
+      hYptarDelta->Fill(yptar,delta);
+      hYtarDelta->Fill(ytar,delta);
+      hYtarYptar->Fill(yptar,ytar);
       hYpFpYFp_all->Fill(ypfp,yfp);
       hXpFpXFp_all->Fill(xpfp,xfp);
       hYFpXFp_all->Fill(yfp,xfp); 
-      hYtarYptar->Fill(yptartemp,ytartemp);
-      hZtarDelta->Fill(ztarg,delta_per);
+      hYtarYptar->Fill(yptar,ytar);
+      hZtarDelta->Fill(reactz,delta);
       for  (UInt_t nc=0;nc<ytar_delta_cut.size();nc++) {
-	if (ytar_delta_cut[nc]->IsInside(ytartemp,delta))	{ 
+	if (ytar_delta_cut[nc]->IsInside(ytar,delta))	{ 
 	  hYsDelta[nc]->Fill(ysieve,delta);
 	  hXsDelta[nc]->Fill(xsieve,delta);
 	  hYpFpYFp[nc]->Fill(ypfp,yfp);
-	  hXFpYFp[nc]->Fill(yfp,xfp);
-	  hXpFpXFp[nc]->Fill(xpfp,xfp);
 	  for  (Int_t nd=0;nd<ndelcut;nd++) {
 	    //if ( delta >=delcut[nd] && delta <delcut[nd+1]) {
-	    //if ( delta_per >=delcut[nd]-delwidth[nd] && delta_per <delcut[nd]+delwidth[nd]) {
 	    if ( delta >=delcut[nd]-delwidth[nd] && delta <delcut[nd]+delwidth[nd]) {
 	      hYsXs_DelCut[nc][nd]->Fill(ysieve,xsieve); 
 	      hYpFpYFp_DelCut[nc][nd]->Fill(ypfp,yfp);
