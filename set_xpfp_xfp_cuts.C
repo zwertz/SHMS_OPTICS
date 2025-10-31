@@ -41,7 +41,7 @@ void set_xpfp_xfp_cuts(Int_t nrun=1814,Int_t FileID=-2,Double_t hist_minZ=1.) {
   Int_t nb=50;
   TColor::CreateGradientColorTable(Number,Len,Red,Green,Blue,nb);
   //  Get info for that optics run
-  TString OpticsFile = "list_of_optics_run.dat";
+  TString OpticsFile = "DATfiles/list_of_optics_run.dat";
   ifstream file_optics(OpticsFile.Data());
   TString opticsline;
   TString OpticsID="";
@@ -125,7 +125,7 @@ void set_xpfp_xfp_cuts(Int_t nrun=1814,Int_t FileID=-2,Double_t hist_minZ=1.) {
   //
   vector<vector<Double_t> > AxisRange;
   AxisRange.resize(ndelcut);
-  TString AxisRangeFileName = "AxisRange_xpfp_xfp_22deg.dat";
+  TString AxisRangeFileName = "DATfiles/AxisRange_xpfp_xfp.dat";
   ifstream AxisRangeFile(AxisRangeFileName.Data());
   for  (Int_t nd=0;nd<ndelcut;nd++) { AxisRange[nd].resize(4) ;}
   //
@@ -143,7 +143,7 @@ void set_xpfp_xfp_cuts(Int_t nrun=1814,Int_t FileID=-2,Double_t hist_minZ=1.) {
     }
   }
   //
-  string oldcoeffsfilename="shms-2017-26cm-monte_q1_1018_q2_1027_q3_1018_forward_global.dat";
+  string oldcoeffsfilename="NewFits/shms-2017-26cm-monte_q1_1018_q2_1027_q3_1018_forward_global.dat";
   ifstream oldcoeffsfile(oldcoeffsfilename.c_str());
   vector<Double_t> xfpcoeffs;
   vector<Double_t> xpfpcoeffs;
@@ -333,10 +333,10 @@ void set_xpfp_xfp_cuts(Int_t nrun=1814,Int_t FileID=-2,Double_t hist_minZ=1.) {
       hXpFpXFp_DelCut[nf][nd]->GetXaxis()->SetRangeUser(AxisRange[nd][2],AxisRange[nd][3]);
       histView_Cut->Update();
       for  (Int_t nys=0;nys<11;nys++) {
-	vline[nys][nd][nf]->Draw("same");
-	TText* ystext = new TText(vxpfp[nys][nd][nf]/1000.,AxisRange[nd][1],Form("P%d",nys));
-	ystext->SetTextColor(2);
-	ystext->Draw();
+	//vline[nys][nd][nf]->Draw("same");
+	//TText* ystext = new TText(vxpfp[nys][nd][nf]/1000.,AxisRange[nd][1],Form("P%d",nys));
+	//ystext->SetTextColor(2);
+	//ystext->Draw();
       }
       histView_Cut->Update();
       fcut.cd();

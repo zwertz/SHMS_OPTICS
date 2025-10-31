@@ -104,7 +104,8 @@ void make_hist_shms_optics_v2(Int_t nrun=1813,Bool_t CutYtarFlag=kTRUE,Bool_t Cu
   //
   TString inputroot;
   TString outputhist;
-  inputroot = Form("ROOTfiles/LAD_COIN/PRODUCTION/LAD_Optics_%s_0_0_%d.root",OpticsID.Data(),FileID);
+  //inputroot = Form("ROOTfiles/LAD_COIN/PRODUCTION/LAD_Optics_%s_0_0_%d.root",OpticsID.Data(),FileID);
+  inputroot = Form("ROOTfiles/LAD_COIN/PRODUCTION/LAD_Optics_%s_0_0_%d_newfit_global_zbin_allA1n.root",OpticsID.Data(),FileID);
 
   outputhist=Form("hist/Optics_%s_%d_hist_v2.root",OpticsID.Data(),FileID);
   cout << " input root = " << inputroot << endl;
@@ -273,7 +274,7 @@ void make_hist_shms_optics_v2(Int_t nrun=1813,Bool_t CutYtarFlag=kTRUE,Bool_t Cu
   //added text to read in matrix elements directly:
   //parse the input matrix elements
   //string coeffsfilename="NewFits/hsv_fit_global.dat";
-  string coeffsfilename="NewFits/shms-2019-newopt-Jan19.dat";
+  string coeffsfilename="NewFits/newfit_global_zbin_allA1n.dat";
   cout << "New Matrix incoming line 279" << endl;
   ifstream coeffsfile(coeffsfilename.c_str());
   TString currentline;
