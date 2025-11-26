@@ -44,7 +44,7 @@ gStyle->SetPalette(1,0);
  gStyle->SetTitleSize(0.06,"XY");
  gStyle->SetPadLeftMargin(0.12);
  //  Get info for that optics run
- TString OpticsFile = "list_of_optics_run.dat";
+ TString OpticsFile = "DATfiles/list_of_optics_run.dat";
    ifstream file_optics(OpticsFile.Data());
  TString opticsline;
   TString OpticsID="";
@@ -121,13 +121,9 @@ gStyle->SetPalette(1,0);
  //
    TString inputroot;
    TString outputroot;
-   if (nrun==16023){inputroot=Form("ROOTfiles/cafe_replay_optics_%s_%d.root",OpticsID.Data(),FileID);}
-  else if (nrun==16024){inputroot=Form("ROOTfiles/cafe_replay_optics_comb_6p8deg_%d.root",FileID);}
-  else if (nrun==16031){inputroot=Form("ROOTfiles/cafe_replay_optics_%s_%d.root",OpticsID.Data(),FileID);}
-  else if (nrun==16029){inputroot=Form("ROOTfiles/cafe_replay_prod_%s_%d.root",OpticsID.Data(),FileID);}
-  else if (nrun==16033){inputroot=Form("ROOTfiles/cafe_replay_optics_%s_%d.root",OpticsID.Data(),FileID);}
-  else {inputroot=Form("ROOTfiles/cafe_replay_optics_comb_8p3deg_%d.root",FileID);}
-   outputroot= Form("hist/Optics_%s_%d_fit_tree.root",OpticsID.Data(),FileID);
+   Int_t fid = -1;//input
+   inputroot = Form("ROOTfiles/LAD_COIN/PRODUCTION/LAD_Optics_%s_0_0_%d_newfit_global_zbin_allA1n.root",OpticsID.Data(),FileID);
+   outputroot= Form("hist/Optics_%s_%d_fit_tree_v2.root",OpticsID.Data(),FileID);
    TH1F *hxbpm_tar = new TH1F("hxbpm_tar",Form("Run %d ; Xbpm_tar ; Counts",nrun),100,-2.,2.);
    TH1F *hybpm_tar = new TH1F("hybpm_tar",Form("Run %d ; Ybpm_tar ; Counts",nrun),100,-2.,2.);
   //
@@ -286,9 +282,8 @@ TTree *tsimc = (TTree*) fsimc->Get("T");
    //
 
  //parse the input matrix elements
-   //string coeffsfilename="newfit_global_zbin_30deg.dat";
-   //string coeffsfilename="newfit_10790_zbin.dat";
-   string coeffsfilename="hsv_fit_global.dat";
+  string coeffsfilename="NewFits/newfit_global_zbin_allA1n.dat";
+  cout << "New Matrix incoming line 279" << endl;
   ifstream coeffsfile(coeffsfilename.c_str());
   TString currentline;
   int num_recon_terms=0;
@@ -363,6 +358,7 @@ TTree *tsimc = (TTree*) fsimc->Get("T");
 
      ////////////////////////////////////////////////////////////////////
       // Calculate corrections & recalculate ,,,track parameters
+     /*
     Double_t xptar_save=0.,xptar_diff=10000., xtar_new=-reacty;
     Double_t x_tg = -reacty-xMP; // units of cm, beam position in spectrometer coordinate system
 
@@ -402,8 +398,25 @@ TTree *tsimc = (TTree*) fsimc->Get("T");
       xptar_save = xptartemp;
       niter++;
     }
+     */
+      Double_t ytartemp = 0.0,yptartemp=0.0,xptartemp=0.0,deltatemp=0.0;
+    Double_t etemp;
+    for( int icoeff=0; icoeff<num_recon_terms; icoeff++ ){
+      etemp= 
+	pow( xfp / 100.0, xfpexpon[icoeff] ) * 
+	pow( yfp / 100.0, yfpexpon[icoeff] ) * 
+	pow( xpfp, xpfpexpon[icoeff] ) * 
+	pow( ypfp, ypfpexpon[icoeff] ) * 
+	pow( xtar/100., xtarexpon[icoeff] );
+      deltatemp += deltacoeffs[icoeff] * etemp;
+      ytartemp += ytarcoeffs[icoeff] * etemp;
+      yptartemp += yptarcoeffs[icoeff] * etemp;
+      xptartemp += xptarcoeffs[icoeff] *etemp; 
+    } // for icoeffold loop
+    
     ///////////////////////////////////////////////////////////////////
-    xsieve = xtar_new + xptartemp*253;
+    //xsieve = xtar_new + xptartemp*253;
+    xsieve = xtar + xptartemp*253;
     Double_t delta_per = deltatemp*100.0;
     ysieve = ytartemp*100+yptartemp*253.-(0.019+40.*.01*0.052)*delta_per+(0.00019+40*.01*.00052)*delta_per*delta_per;
     ytartemp *=100;
@@ -472,8 +485,8 @@ TTree *tsimc = (TTree*) fsimc->Get("T");
 	 xsieveT=xs_cent[nx_found];
 	 ztarT=ztar_foil[nf_found];
 	 ztar=reactz;
-	 //ztar = (ytartemp-yMP-reactx*(cos(CentAngle)-yptartemp*sin(CentAngle)))/(-sin(CentAngle)-cos(CentAngle)*yptartemp);
-	 ztar = (ytartemp-yMP-0*(cos(CentAngle)-yptartemp*sin(CentAngle)))/(-sin(CentAngle)-cos(CentAngle)*yptartemp);
+	 ztar = (ytartemp-yMP-reactx*(cos(CentAngle)-yptartemp*sin(CentAngle)))/(-sin(CentAngle)-cos(CentAngle)*yptartemp);
+	 //ztar = (ytartemp-yMP-0*(cos(CentAngle)-yptartemp*sin(CentAngle)))/(-sin(CentAngle)-cos(CentAngle)*yptartemp);
 	 //xptar = xptar - xptarOffset;
 	 otree->Fill();
        }

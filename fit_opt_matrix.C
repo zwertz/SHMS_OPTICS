@@ -18,19 +18,8 @@
 #include <TMatrixD.h>
 #include <TVectorD.h>
 #include <TDecompSVD.h>
-
-
-
-void fit_opt_matrix_v2(Int_t nSettings = 1) {
-  Double_t xMP = -0.126;
-  Int_t FileID=-1;
-  Int_t maxFoils=3;
-  Int_t maxDel=25;
-
-  vector<int> runTot;
-  runTot.push_back(22045);
+void fit_opt_matrix(TString fname="Optics_1814_1919_shms_newfit3_tree") {
   
-
   gROOT->Reset();
   gStyle->SetOptStat(0);
   gStyle->SetTitleOffset(1.,"Y");
@@ -39,17 +28,14 @@ void fit_opt_matrix_v2(Int_t nSettings = 1) {
   gStyle->SetTitleSize(0.05,"XY");
   gStyle->SetPadLeftMargin(0.17);
   //
-  string newcoeffsfilename="NewFits/lad_shms_newfit.dat";
-  string oldcoeffsfilename="NewFits/newfit_global_zbin_allA1n.dat";
-
-   TString outputhist=Form("hist/Optics_22045_22048_%d_fitopt_v2.root",FileID);
-   TFile *fout = new TFile(outputhist,"RECREATE");
-
-   
-  int nfit=0,npar,nfit_max=24300,npar_final=0,max_order=6,norder;
-  Int_t MaxPerBin=1000;
-  Int_t MaxZtarPerBin=15000;
-
+  string newcoeffsfilename="newfit.dat";
+  //string oldcoeffsfilename="shms_newfit_april2020.dat";
+  //string oldcoeffsfilename="mkj_fit_10776.dat";//shms_newfit_april2020.dat";
+  //string oldcoeffsfilename="hsv_fit_10790_stripped.dat";//shms_newfit_april2020.dat";
+  string oldcoeffsfilename="hsv_fit_10790_low_stripped.dat";//shms_newfit_april2020.dat";
+  int nfit=0,npar,nfit_max=19328,npar_final=0,max_order=6,norder;
+  Int_t MaxPerBin=200;
+  Int_t MaxZtarPerBin=10000;
   //
   TH1F *hDelta = new TH1F("hDelta","Delta ",20,-10.,30.);
   TH1F *hDeltarecon = new TH1F("hDeltarecon","Delta Recon % ",40,-10,30);
@@ -74,37 +60,7 @@ void fit_opt_matrix_v2(Int_t nSettings = 1) {
   //
   ifstream oldcoeffsfile(oldcoeffsfilename.c_str());
   ofstream newcoeffsfile(newcoeffsfilename.c_str());
-
-   if(!oldcoeffsfile.is_open()) {
-     cout << " error opening reconstruction coefficient file: " << oldcoeffsfilename.c_str() << endl;
-     return;
-   } else {
-     cout << "Open  Old coeff file = " << oldcoeffsfilename.c_str() << endl;
-   }
-   string line="!";
-  int good = getline(oldcoeffsfile,line).good();
-  int nskip=0;
-  if ( line[0] =='!') {
-  while(good && line[0]=='!') {
-    good = getline(oldcoeffsfile,line).good();
-    nskip++;
-    //    cout << line << endl;
-  }
-  }
-  cout << " skipped " << nskip << " comments lines in file : " << oldcoeffsfilename.c_str() << endl;
-  cout << " at line = " << line.c_str() << endl;
-  nskip=0;
- if ( line.compare(0,4," ---")==0) {
-  while(good && line.compare(0,4," ---")==0) {
-    good = getline(oldcoeffsfile,line).good();
-    nskip++;
-  }
- }
-  cout << " skipped " << nskip << " separation lines in file : " << oldcoeffsfilename.c_str() << endl;
-  cout << line.c_str() << endl;
- 
-
-
+  
   vector<double> xptarcoeffs_old;
   vector<double> yptarcoeffs_old;
   vector<double> ytarcoeffs_old;
@@ -135,7 +91,7 @@ void fit_opt_matrix_v2(Int_t nSettings = 1) {
   vector<int> ypfpexpon_xtar;
   vector<int> xtarexpon_xtar;
 
-  vector<double> xtartrue,ytartrue,xptartrue,yptartrue,deltatrue,angle,ztartrue;
+  vector<double> xtartrue,ytartrue,xptartrue,yptartrue,deltatrue;
   vector<double> xfptrue,yfptrue,xpfptrue,ypfptrue;
   TString currentline;
   int num_recon_terms_old;
@@ -159,61 +115,61 @@ void fit_opt_matrix_v2(Int_t nSettings = 1) {
   
   
   //
-  Double_t Coeff[4];
-  Int_t Exp[5];
-  while( good && line.compare(0,4," ---")!=0 ){
-
-     sscanf(line.c_str()," %le %le %le %le %1d%1d%1d%1d%1d"
-	   ,&Coeff[0],&Coeff[1]
-	   ,&Coeff[2],&Coeff[3]
-	   ,&Exp[0]
-	   ,&Exp[1]
-	   ,&Exp[2]
-	   ,&Exp[3]
-	   ,&Exp[4]);
+  while( currentline.ReadLine(oldcoeffsfile,kFALSE) && !currentline.BeginsWith(" ----") ){
     
-    xptarcoeffs_old.push_back(Coeff[0]);
-    ytarcoeffs_old.push_back(Coeff[1]);
-    yptarcoeffs_old.push_back(Coeff[2]);
-    deltacoeffs_old.push_back(Coeff[3]);
+    TString sc1(currentline(1,16));
+    TString sc2(currentline(17,16));
+    TString sc3(currentline(33,16));
+    TString sc4(currentline(49,16));
     
-    xfpexpon_old.push_back(Exp[0]);
-    xpfpexpon_old.push_back(Exp[1]);
-    yfpexpon_old.push_back(Exp[2]);
-    ypfpexpon_old.push_back(Exp[3]);
-    xtarexpon_old.push_back(Exp[4]);
-
-
-   num_recon_terms_old++;
-   norder= Exp[0]+Exp[1]+Exp[2]+Exp[3]+Exp[4];
-    if (Exp[4]==0) {
-    xptarcoeffs_fit.push_back(Coeff[0]);
-    ytarcoeffs_fit.push_back(Coeff[1]);
-    yptarcoeffs_fit.push_back(Coeff[2]);
-    deltacoeffs_fit.push_back(Coeff[3]);
+    xptarcoeffs_old.push_back(sc1.Atof());
+    ytarcoeffs_old.push_back(sc2.Atof());
+    yptarcoeffs_old.push_back(sc3.Atof());
+    deltacoeffs_old.push_back(sc4.Atof());
     
+    int expontemp[5];
 
-    xfpexpon_fit.push_back(Exp[0]);
-    xpfpexpon_fit.push_back(Exp[1]);
-    yfpexpon_fit.push_back(Exp[2]);
-    ypfpexpon_fit.push_back(Exp[3]);
-    xtarexpon_fit.push_back(Exp[4]);
+    for(int expon=0; expon<5; expon++){
+      TString stemp(currentline(66+expon,1));
+      expontemp[expon] = stemp.Atoi();
+    }
+
+  
+
+    xfpexpon_old.push_back(expontemp[0]);
+    xpfpexpon_old.push_back(expontemp[1]);
+    yfpexpon_old.push_back(expontemp[2]);
+    ypfpexpon_old.push_back(expontemp[3]);
+    xtarexpon_old.push_back(expontemp[4]);
+
+   
+    
+    num_recon_terms_old++;
+    norder= expontemp[0]+expontemp[1]+expontemp[2]+expontemp[3]+expontemp[4];
+    if (expontemp[4]==0) {
+    xptarcoeffs_fit.push_back(sc1.Atof());
+    ytarcoeffs_fit.push_back(sc2.Atof());
+    yptarcoeffs_fit.push_back(sc3.Atof());
+    deltacoeffs_fit.push_back(sc4.Atof());
+    xfpexpon_fit.push_back(expontemp[0]);
+    xpfpexpon_fit.push_back(expontemp[1]);
+    yfpexpon_fit.push_back(expontemp[2]);
+    ypfpexpon_fit.push_back(expontemp[3]);
+    xtarexpon_fit.push_back(expontemp[4]);
+    //cout << num_recon_terms_fit << " " <<  xptarcoeffs_fit[num_recon_terms_fit] << " " << ytarcoeffs_fit[num_recon_terms_fit] << " " <<  yptarcoeffs_fit[num_recon_terms_fit] << " " << deltacoeffs_fit[num_recon_terms_fit] << " " << xfpexpon_fit[num_recon_terms_fit] << " " << xpfpexpon_fit[num_recon_terms_fit] << " " << yfpexpon_fit[num_recon_terms_fit] << " " << ypfpexpon_fit[num_recon_terms_fit] << " " << xtarexpon_fit[num_recon_terms_fit] << " " << endl;
     num_recon_terms_fit++;
     } else {
-    xptarcoeffs_xtar.push_back(Coeff[0]);
-    ytarcoeffs_xtar.push_back(Coeff[1]);
-    yptarcoeffs_xtar.push_back(Coeff[2]);
-    deltacoeffs_xtar.push_back(Coeff[3]);
-    
-
-    xfpexpon_xtar.push_back(Exp[0]);
-    xpfpexpon_xtar.push_back(Exp[1]);
-    yfpexpon_xtar.push_back(Exp[2]);
-    ypfpexpon_xtar.push_back(Exp[3]);
-    xtarexpon_xtar.push_back(Exp[4]);
+    xptarcoeffs_xtar.push_back(sc1.Atof());
+    ytarcoeffs_xtar.push_back(sc2.Atof());
+    yptarcoeffs_xtar.push_back(sc3.Atof());
+    deltacoeffs_xtar.push_back(sc4.Atof());
+    xfpexpon_xtar.push_back(expontemp[0]);
+    xpfpexpon_xtar.push_back(expontemp[1]);
+    yfpexpon_xtar.push_back(expontemp[2]);
+    ypfpexpon_xtar.push_back(expontemp[3]);
+    xtarexpon_xtar.push_back(expontemp[4]);
     num_recon_terms_xtar++;
     }
-    good = getline(oldcoeffsfile,line).good();
   }
 
   cout << "num recon terms in OLD matrix = " << num_recon_terms_old << endl;
@@ -228,127 +184,64 @@ void fit_opt_matrix_v2(Int_t nSettings = 1) {
   TMatrixD lambda(npar,nfit_max);
   TMatrixD Ay(npar,npar);
   //
-  
-  
-  const Int_t nysieve=11;  
+  TString inputroot;
+  inputroot = "hist/"+fname+".root";
+  cout << " INfile = " << inputroot << endl;
+  TFile *fsimc = new TFile(inputroot);
+  TTree *FitTree = (TTree*)fsimc->Get("TFit");
+  //Declaration of leaves types
+  Double_t  ys,xtar,xptar,yptar,ytar,delta,xptarT,yptarT,ytarT,ztarT;
+  Double_t xfp,xpfp,yfp,ypfp,ysieveT,ysieve;
+  FitTree->SetBranchAddress("ys",&ysieve);
+  FitTree->SetBranchAddress("ysT",&ysieveT);
+  FitTree->SetBranchAddress("xtar",&xtar);
+  FitTree->SetBranchAddress("xptar",&xptar);
+  FitTree->SetBranchAddress("yptar",&yptar);
+  FitTree->SetBranchAddress("ytar",&ytar);
+  FitTree->SetBranchAddress("xptarT",&xptarT);
+  FitTree->SetBranchAddress("yptarT",&yptarT);
+  FitTree->SetBranchAddress("ytarT",&ytarT);
+  FitTree->SetBranchAddress("ztarT",&ztarT);
+  FitTree->SetBranchAddress("delta",&delta);
+  FitTree->SetBranchAddress("xpfp",&xpfp);
+  FitTree->SetBranchAddress("ypfp",&ypfp);
+  FitTree->SetBranchAddress("xfp",&xfp);
+  FitTree->SetBranchAddress("yfp",&yfp);
+  //
+  vector<Int_t > Ztar_Cnts;
+  vector<vector<vector<Int_t> > > Ztar_Ys_Delta_Cnts;
+  const Int_t nfoils=3;
+  vector <Double_t> ztar_foil;
+  //ztar_foil.push_back(20.);
+  ztar_foil.push_back(6.67*2);
+  ztar_foil.push_back(0.0);
+  ztar_foil.push_back(-20.0);
+  //ztar_foil.push_back(-30.0);
+  Ztar_Cnts.resize(nfoils);
+  Ztar_Ys_Delta_Cnts.resize(nfoils);
+  static const Int_t ndelcut=7;
+  Double_t delcut[ndelcut]={-11.,-8.,-4.,0,4.,8.,17.5};
+  Double_t delwidth[ndelcut]={1.0,2.0,2.0,2.0,2.0,2.0,7.5};
+  const Int_t nysieve=11;
   vector <Double_t> ys_cent;
   for (Int_t nys=0;nys<nysieve;nys++) {
     Double_t pos=nys*1.64-1.64*5;
     ys_cent.push_back(pos);
   }
+  for (Int_t nf=0;nf<nfoils;nf++) {
+    Ztar_Ys_Delta_Cnts[nf].resize(ndelcut);
+    for (Int_t nd=0;nd<ndelcut;nd++) {
+      Ztar_Ys_Delta_Cnts[nf][nd].resize(nysieve);
+    }
+  }
+  //
+  for (Int_t nf=0;nf<nfoils;nf++) {
+    for (Int_t nd=0;nd<ndelcut;nd++) {
+      for (Int_t ny=0;ny<nysieve;ny++) {	
+	Ztar_Ys_Delta_Cnts[nf][nd][ny]=0;
+      }}}
   
-  for (int iSetting=0; iSetting<nSettings; iSetting++){
-    //  Get info for that optics run
-    Int_t nrun = runTot[iSetting];
-    TString OpticsFile = "DATfiles/list_of_optics_run.dat";
-    ifstream file_optics(OpticsFile.Data());
-    TString opticsline;
-    TString OpticsID="";
-    Int_t RunNum=0.;
-    Double_t CentAngle=0.;
-    Int_t SieveFlag=1;
-    Int_t nfoils=0;
-    TString temp;
-    //
-    vector <Double_t> ztar_foil;
-    Int_t ndelcut=-1;
-    vector<Double_t > delcut;
-    vector<Double_t > delwidth;
-    if (file_optics.is_open()) {
-      //
-      cout << " Open file = " << OpticsFile << endl;
-      while (RunNum!=nrun  ) {
-	temp.ReadToDelim(file_optics,',');
-	cout << temp << endl;
-	if (temp.Atoi() == nrun) {
-	RunNum = temp.Atoi();
-	} else {
-	  temp.ReadLine(file_optics);
-	}
-      }
-      if (RunNum==nrun) {
-	temp.ReadToDelim(file_optics,',');
-	OpticsID = temp;
-	temp.ReadToDelim(file_optics,',');
-	CentAngle = temp.Atof();
-	temp.ReadToDelim(file_optics,',');
-	nfoils = temp.Atoi();
-	temp.ReadToDelim(file_optics,',');
-	SieveFlag = temp.Atoi();
-	temp.ReadToDelim(file_optics);
-	ndelcut = temp.Atoi();
-	for (Int_t nf=0;nf<nfoils-1;nf++) {
-	  temp.ReadToDelim(file_optics,',');
-	  ztar_foil.push_back(temp.Atof());
-	}
-	temp.ReadToDelim(file_optics);
-	ztar_foil.push_back(temp.Atof());
-	for (Int_t nd=0;nd<ndelcut-1;nd++) {
-	  temp.ReadToDelim(file_optics,',');
-	  delcut.push_back(temp.Atof());
-	}
-	temp.ReadToDelim(file_optics);
-	delcut.push_back(temp.Atof());
-	for (Int_t nw=0;nw<ndelcut-1;nw++) {
-	  temp.ReadToDelim(file_optics,',');
-	  delwidth.push_back(temp.Atof());
-	}
-	temp.ReadToDelim(file_optics);
-	delwidth.push_back(temp.Atof());
-      }
-    } else {
-      cout << " No file = " << OpticsFile << endl;    
-    }
-    cout << RunNum << " " << OpticsID << " " << CentAngle << " " << nfoils << " " << SieveFlag << endl;
-    
-    TString inputroot;
-    inputroot = Form("hist/Optics_%s_%d_fit_tree.root",OpticsID.Data(),FileID);
-    cout << " INfile = " << inputroot << endl;
-    TFile *fsimc = new TFile(inputroot);
-    TTree *FitTree = (TTree*)fsimc->Get("TFit");
-    //Declaration of leaves types
-    Double_t  ys,xtar,xptar,yptar,ytar,delta,xptarT,yptarT,ytarT,ztarT,xtarT;
-    Double_t xfp,xpfp,yfp,ypfp,ysieveT,ysieve;
-    FitTree->SetBranchAddress("ys",&ysieve);
-    FitTree->SetBranchAddress("ysT",&ysieveT);
-    FitTree->SetBranchAddress("xtar",&xtar);
-    FitTree->SetBranchAddress("xtarT",&xtarT);
-    FitTree->SetBranchAddress("xptar",&xptar);
-    FitTree->SetBranchAddress("yptar",&yptar);
-    FitTree->SetBranchAddress("ytar",&ytar);
-    FitTree->SetBranchAddress("xptarT",&xptarT);
-    FitTree->SetBranchAddress("yptarT",&yptarT);
-    FitTree->SetBranchAddress("ytarT",&ytarT);
-    FitTree->SetBranchAddress("ztarT",&ztarT);
-    FitTree->SetBranchAddress("delta",&delta);
-    FitTree->SetBranchAddress("xpfp",&xpfp);
-    FitTree->SetBranchAddress("ypfp",&ypfp);
-    FitTree->SetBranchAddress("xfp",&xfp);
-    FitTree->SetBranchAddress("yfp",&yfp);
-    //
-
-    vector<Int_t > Ztar_Cnts;
-    vector<vector<vector<Int_t> > > Ztar_Ys_Delta_Cnts;
-    vector<Int_t> Max_Per_Run_Per_Foil;
-    Ztar_Cnts.resize(maxFoils);
-    Ztar_Ys_Delta_Cnts.resize(maxFoils);
-    Max_Per_Run_Per_Foil.resize(maxFoils);
-   
-    for (Int_t nf=0;nf<maxFoils;nf++) {//max foils
-      Ztar_Ys_Delta_Cnts[nf].resize(maxDel);//max del cut
-      for (Int_t nd=0;nd<maxDel;nd++) {
-	Ztar_Ys_Delta_Cnts[nf][nd].resize(nysieve);
-      }
-    }
-    //
-    for (Int_t nf=0;nf<maxFoils;nf++) {//max foils
-      Max_Per_Run_Per_Foil[nf] = 8100;//check this number?
-      Ztar_Cnts[nf]=0;
-      for (Int_t nd=0;nd<maxDel;nd++) {//max del cut
-	for (Int_t ny=0;ny<nysieve;ny++) {	
-	  Ztar_Ys_Delta_Cnts[nf][nd][ny]=0;
-	}}}
-    
+  //
   Long64_t nentries = FitTree->GetEntries();
   for (int i = 0; i < nentries; i++) {
     FitTree->GetEntry(i);
@@ -378,14 +271,10 @@ void fit_opt_matrix_v2(Int_t nSettings = 1) {
 	Int_t found_ny=-1;
 	Bool_t good_bin=kFALSE;
 	for (Int_t nf=0;nf<nfoils;nf++) {
-	  if (abs(ztarT-ztar_foil[nf])<2.5){
-	    found_nf=nf;
-	  }
+	  if (abs(ztarT-ztar_foil[nf])<1) found_nf=nf;
 	}
 	for (Int_t nd=0;nd<ndelcut;nd++) {
-	  if (delta >=delcut[nd]-delwidth[nd] && delta <delcut[nd]+delwidth[nd]) {
-	    found_nd=nd;
-	  }
+	  if (delta >=delcut[nd]-delwidth[nd] && delta <delcut[nd]+delwidth[nd]) found_nd=nd;
 	}
 	for (Int_t ny=0;ny<nysieve;ny++) {	
 	  if (abs(ysieveT-ys_cent[ny])<.5) found_ny=ny;
@@ -393,11 +282,9 @@ void fit_opt_matrix_v2(Int_t nSettings = 1) {
 	if (found_nf!=-1 &&found_nd!=-1 && found_ny!=-1)  {
 	  good_bin=kTRUE;
 	}
-
-	if (good_bin && nfit < nfit_max && Ztar_Ys_Delta_Cnts[found_nf][found_nd][found_ny]< MaxPerBin && Ztar_Cnts[found_nf]< MaxZtarPerBin && Ztar_Cnts[found_nf]<Max_Per_Run_Per_Foil[found_nf]) {
-
-	  //reconstruct it
-	  Double_t ytar_xtar = 0.0,yptar_xtar=0.0,xptar_xtar=0.0;
+	if (good_bin && nfit < nfit_max && Ztar_Ys_Delta_Cnts[found_nf][found_nd][found_ny]< MaxPerBin && Ztar_Cnts[found_nf]< MaxZtarPerBin) {
+	  //
+          Double_t ytar_xtar = 0.0,yptar_xtar=0.0,xptar_xtar=0.0;
           for( int icoeff_xtar=0; icoeff_xtar<num_recon_terms_xtar; icoeff_xtar++ ){
 	    etemp= 
 	      pow( xfp / 100.0, xfpexpon_xtar[icoeff_xtar] ) * 
@@ -423,9 +310,6 @@ void fit_opt_matrix_v2(Int_t nSettings = 1) {
 	      b_ytar[icoeff_fit] += (ytarT-ytar_xtar*100) /100.0 * etemp;
 	    }
 	  } // for icoeff_fit loop
-	   
-	  ////////////////////////////////////////////////////////////
-
 	  hytar->Fill(ytar);
 	  hyptar->Fill(yptar);
 	  hxptar->Fill(xptar);
@@ -439,40 +323,32 @@ void fit_opt_matrix_v2(Int_t nSettings = 1) {
 	  yfptrue.push_back( yfp );
 	  xpfptrue.push_back( xpfp );
 	  ypfptrue.push_back( ypfp );
-	  xtartrue.push_back( xtarT );//used to be xtar
+	  xtartrue.push_back( xtar );
 	  xptartrue.push_back( xptarT );
-	  ytartrue.push_back( ytarT );
-	  yptartrue.push_back( yptarT );
-	  ztartrue.push_back(ztarT);
-	  angle.push_back(CentAngle*(22./7.)/180.0);
+	  ytartrue.push_back( ytarT  );
+	  yptartrue.push_back( yptarT  );
 	}
       }
     }
   }
   //
-  for (Int_t nf=0;nf<maxFoils;nf++) cout << " counts foil " << nf << " : " << Ztar_Cnts[nf] << endl;
+  for (Int_t nf=0;nf<nfoils;nf++) cout << " counts foil " << nf << " : " << Ztar_Cnts[nf] << endl;
+  if (nfit < nfit_max) {
+    cout << " nfit < nfit_max set nfit_max = " << nfit << endl;
+    return;
+  }
   //
   for (Int_t nf=0;nf<nfoils;nf++) {
     cout << " ztar = " << ztar_foil[nf] << endl;
     for (Int_t nd=0;nd<ndelcut;nd++) {
       cout << " Ndelta = " << delcut[nd] << endl;       
-      for (Int_t ny=0;ny<nysieve;ny++) {
+      for (Int_t ny=0;ny<nysieve;ny++) {	
 	cout <<  Ztar_Ys_Delta_Cnts[nf][nd][ny] << " " ;
       }
       cout << endl;
     }}
   
   //
-   //
-  ////////////////////
-  //end each run loop
-  ////////////////////
-  }
-   //
-  if (nfit < nfit_max) {
-    cout << " nfit < nfit_max, set nfit_max = " << nfit << endl;
-    return;
-  }
   //
   cout << " number to fit = " << nfit << " max = " << nfit_max << endl;
   for(int i=0; i<npar; i++){
@@ -488,7 +364,7 @@ void fit_opt_matrix_v2(Int_t nSettings = 1) {
       }
     }
   }
- 
+  //
   TDecompSVD Ay_svd(Ay);
   bool ok;
   ok = Ay_svd.Solve( b_ytar );
@@ -500,45 +376,41 @@ void fit_opt_matrix_v2(Int_t nSettings = 1) {
   ok = Ay_svd.Solve( b_xptar );
   cout << "xptar solution ok = " << ok << endl;
   //b_xptar.Print();
-
-
-  ///////////////////////////////////////////////////////////////////////////////////////////////
-    for( int ifit=0; ifit<nfit; ifit++){
-          Double_t ytarnew = 0.0,yptarnew=0.0,xptarnew=0.0,deltanew=0.0;
-	  Double_t etemp;
-     for( int ipar=0; ipar<npar; ipar++){
-       etemp=lambda[ipar][ifit];
-        	ytarnew += b_ytar[ipar] * etemp;
-	        yptarnew += b_yptar[ipar] * etemp;
-	         xptarnew += b_xptar[ipar] *etemp;        
+  // calculate target quantities with new fit parameter
+  for( int ifit=0; ifit<nfit; ifit++){
+    Double_t ytarnew = 0.0,yptarnew=0.0,xptarnew=0.0,deltanew=0.0;
+    Double_t etemp;
+    for( int ipar=0; ipar<npar; ipar++){
+      etemp=lambda[ipar][ifit];
+      ytarnew += b_ytar[ipar] * etemp;
+      yptarnew += b_yptar[ipar] * etemp;
+      xptarnew += b_xptar[ipar] *etemp;        
     }
-          Double_t ytar_xtar = 0.0,yptar_xtar=0.0,xptar_xtar=0.0;
-          for( int icoeff_xtar=0; icoeff_xtar<num_recon_terms_xtar; icoeff_xtar++ ){
-        	etemp= 
-	  pow( xfptrue.at(ifit) / 100.0, xfpexpon_xtar[icoeff_xtar] ) * 
-	  pow( yfptrue.at(ifit) / 100.0, yfpexpon_xtar[icoeff_xtar] ) * 
-	  pow( xpfptrue.at(ifit), xpfpexpon_xtar[icoeff_xtar] ) * 
-	  pow( ypfptrue.at(ifit), ypfpexpon_xtar[icoeff_xtar] ) * 
-	  pow( xtartrue.at(ifit)/100., xtarexpon_xtar[icoeff_xtar] );
-        	ytar_xtar += ytarcoeffs_xtar[icoeff_xtar] * etemp;
-	        yptar_xtar += yptarcoeffs_xtar[icoeff_xtar] * etemp;
-		       xptar_xtar += xptarcoeffs_xtar[icoeff_xtar] *etemp; 
-	  }
-	  hytarnew->Fill((ytarnew+ytar_xtar)*100.);
-	  hyptarnew->Fill(yptarnew+yptar_xtar);
-	  hxptarnew->Fill(xptarnew);
-	  hytarnewdiff->Fill((ytarnew+ytar_xtar)*100.-ytartrue.at(ifit));
-	  hyptarnewdiff->Fill(1000*(yptarnew+yptar_xtar-yptartrue.at(ifit)));
-	  hxptarnewdiff->Fill(1000*(xptarnew+xptar_xtar-xptartrue.at(ifit)));
+    Double_t ytar_xtar = 0.0,yptar_xtar=0.0,xptar_xtar=0.0;
+    for( int icoeff_xtar=0; icoeff_xtar<num_recon_terms_xtar; icoeff_xtar++ ){
+      etemp= 
+	pow( xfptrue.at(ifit) / 100.0, xfpexpon_xtar[icoeff_xtar] ) * 
+	pow( yfptrue.at(ifit) / 100.0, yfpexpon_xtar[icoeff_xtar] ) * 
+	pow( xpfptrue.at(ifit), xpfpexpon_xtar[icoeff_xtar] ) * 
+	pow( ypfptrue.at(ifit), ypfpexpon_xtar[icoeff_xtar] ) * 
+	pow( xtartrue.at(ifit)/100., xtarexpon_xtar[icoeff_xtar] );
+      ytar_xtar += ytarcoeffs_xtar[icoeff_xtar] * etemp;
+      yptar_xtar += yptarcoeffs_xtar[icoeff_xtar] * etemp;
+      xptar_xtar += xptarcoeffs_xtar[icoeff_xtar] *etemp; 
+    }
+    hytarnew->Fill((ytarnew+ytar_xtar)*100.);
+    hyptarnew->Fill(yptarnew+yptar_xtar);
+    hxptarnew->Fill(xptarnew);
+    hytarnewdiff->Fill((ytarnew+ytar_xtar)*100.-ytartrue.at(ifit));
+    hyptarnewdiff->Fill(1000*(yptarnew+yptar_xtar-yptartrue.at(ifit)));
+    hxptarnewdiff->Fill(1000*(xptarnew+xptar_xtar-xptartrue.at(ifit)));
   }
-
-  ///////////////////////////////////////////////////////////////////////////////////////////////
   // write out coeff
   char coeffstring[100];
   Double_t tt;
   cout << "writing new coeffs file" << endl;
-  //newcoeffsfile << "! new fit to "<<endl;//+fname << endl;
-  //newcoeffsfile << " ---------------------------------------------" << endl;
+  newcoeffsfile << "! new fit to "+fname << endl;
+  newcoeffsfile << " ---------------------------------------------" << endl;
   for( int icoeff_fit=0; icoeff_fit<num_recon_terms_fit; icoeff_fit++ ){
     newcoeffsfile << " ";
     //      tt=xptarcoeffs_fit[icoeff_fit];
@@ -632,12 +504,4 @@ void fit_opt_matrix_v2(Int_t nSettings = 1) {
   //hDeltanewdiff->Fit("gaus");
   //TF1 *fitcdelnewdiff=hDeltanewdiff->GetFunction("gaus");
   //
-
-   TString start_name = Form("plots/Optics_22045_22048_%d_fitopt_v2.pdf(",FileID);
-   TString end_name = Form("plots/Optics_22045_22048_%d_fitopt_v2.pdf)",FileID);
-
-   cdiff->Print(start_name);
-   cnewdiff->Print(end_name);
-   
-  fout->Write();
 }
