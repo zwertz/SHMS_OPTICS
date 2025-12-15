@@ -39,16 +39,16 @@ void fit_opt_matrix_v2(Int_t nSettings = 1) {
   gStyle->SetTitleSize(0.05,"XY");
   gStyle->SetPadLeftMargin(0.17);
   //
-  string newcoeffsfilename="NewFits/lad_shms_newfit.dat";
+  string newcoeffsfilename="NewFits/test_newfit.dat";
   string oldcoeffsfilename="NewFits/newfit_global_zbin_allA1n.dat";
 
    TString outputhist=Form("hist/Optics_22045_22048_%d_fitopt_v2.root",FileID);
    TFile *fout = new TFile(outputhist,"RECREATE");
 
    
-  int nfit=0,npar,nfit_max=24300,npar_final=0,max_order=6,norder;
-  Int_t MaxPerBin=1000;
-  Int_t MaxZtarPerBin=15000;
+  int nfit=0,npar,nfit_max=25500,npar_final=0,max_order=6,norder;
+  Int_t MaxPerBin=250;
+  Int_t MaxZtarPerBin=8500;
 
   //
   TH1F *hDelta = new TH1F("hDelta","Delta ",20,-10.,30.);
@@ -342,7 +342,7 @@ void fit_opt_matrix_v2(Int_t nSettings = 1) {
     }
     //
     for (Int_t nf=0;nf<maxFoils;nf++) {//max foils
-      Max_Per_Run_Per_Foil[nf] = 8100;//check this number?
+      Max_Per_Run_Per_Foil[nf] = 13000;//check this number?
       Ztar_Cnts[nf]=0;
       for (Int_t nd=0;nd<maxDel;nd++) {//max del cut
 	for (Int_t ny=0;ny<nysieve;ny++) {	

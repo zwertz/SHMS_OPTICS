@@ -1,12 +1,19 @@
 void plotOpticsCompare(const char *nrun1,const char *nrun2, double foilPOS){
 
   //read the input file
-  // TFile *f = new TFile(Form("/net/cdaq/cdaql3data/cdaq/hallc-online/ROOTfiles/coin_replay_production_%i_-1.root",nrun));
-  TFile *f1 = new TFile(Form("/lustre24/expphy/volatile/hallc/c-lad/ewertz/lad_replay/ROOTfiles/LAD_COIN/PRODUCTION/LAD_Optics_%s_0_0_-1_newfit_global_zbin_allA1n.root",nrun1));
- TFile *f2 = new TFile(Form("/lustre24/expphy/volatile/hallc/c-lad/ewertz/lad_replay/ROOTfiles/LAD_COIN/PRODUCTION/LAD_Optics_%s_0_0_-1_newfit_lad_shms.root",nrun2));
+  //TFile *f = new TFile(Form("/net/cdaq/cdaql3data/cdaq/hallc-online/ROOTfiles/coin_replay_production_%i_-1.root",nrun));
+  //TFile *f1 = new TFile(Form("/lustre24/expphy/volatile/hallc/c-lad/ewertz/lad_replay/ROOTfiles/LAD_COIN/PRODUCTION/LAD_Optics_%s_0_0_-1_newfit_global_zbin_allA1n.root",nrun1));
+  TFile *f1 = new TFile(Form("/lustre24/expphy/volatile/hallc/c-lad/ewertz/lad_replay/ROOTfiles/LAD_COIN/PRODUCTION/LAD_Optics_%s_0_0_-1_newfit_lad_shms.root",nrun2));
+  TFile *f2 = new TFile(Form("/lustre24/expphy/volatile/hallc/c-lad/ewertz/lad_replay/ROOTfiles/LAD_COIN/PRODUCTION/LAD_Optics_%s_0_0_-1_newfit_lad_shms_v2.root",nrun2));
+  //TFile *f2 = new TFile(Form("/lustre24/expphy/volatile/hallc/c-lad/ewertz/lad_replay/ROOTfiles/LAD_COIN/PRODUCTION/LAD_Optics_%s_0_0_-1_newfit_lad_shms_v3.root",nrun2));
+  //TFile *f2 = new TFile(Form("/lustre24/expphy/volatile/hallc/c-lad/ewertz/lad_replay/ROOTfiles/LAD_COIN/PRODUCTION/LAD_Optics_%s_0_0_-1_newfit_lad_shms_v4.root",nrun2));
   TTree *tt1 = (TTree*)f1->Get("T");
   TTree *tt2 = (TTree*)f2->Get("T");
 
+  //TString out_string1("newfit_global_zbin_allA1n");
+  TString out_string1("newfit_lad_shms");
+  TString out_string2("lad_shms_v2");
+  
  //foil cut
   double foilmin = foilPOS-2.5;
   double foilmax = foilPOS+2.5;
@@ -36,10 +43,10 @@ void plotOpticsCompare(const char *nrun1,const char *nrun2, double foilPOS){
   canvas2->SetFrameFillColor(0);
   canvas2->SetFrameBorderMode(0);
 
-  std::string pdf_file_name= Form("output_plots_%s_%s_sieveComparison.pdf",nrun1,nrun2);
+  std::string pdf_file_name= Form("output_plots_%s_%s_%s_%s_%1.f_sieveComparison.pdf",nrun1,nrun2,out_string1.Data(),out_string2.Data(),foilPOS);
   gROOT->SetBatch(true);
   gStyle->SetOptStat(0);
-  TFile *fout = new TFile(Form("output_plots_%s_%s_sieveComparison.root",nrun1,nrun2),"RECREATE");
+  TFile *fout = new TFile(Form("output_plots_%s_%s_%s_%s_%1.f_sieveComparison.root",nrun1,nrun2,out_string1.Data(),out_string2.Data(),foilPOS),"RECREATE");
 
   TString sieve_string1(Form("ysieve vs xsieve run1 %s;ySieve [cm];xSieve[cm]",all_foil.Data()));
   TString sieve_string2(Form("ysieve vs xsieve run1 %s;ySieve [cm];xSieve[cm]",foil_pos.Data()));
@@ -51,6 +58,8 @@ void plotOpticsCompare(const char *nrun1,const char *nrun2, double foilPOS){
   TH1F *h_xsieve1_all = new TH1F("h_xsieve1_all",";xSieve[cm]",250,-14.0,14.0); 
   TH1F *h_ysieve1_all = new TH1F("h_ysieve1_all",";ySieve[cm]",250,-9.0,9.0);
   TH2F *h2_sieve1_all = new TH2F("h2_sieve1_all",sieve_string1.Data(),250,-9.0,9.0,250,-14.0,14.0);
+  TH1F *h_Vy1_all = new TH1F("h_Vy1_all",";yTar [cm];",100,-5,5);
+  
   
   TH1F *h_z1 = new TH1F("h_z1",";P.react.z [cm]",100,-14,14);
   TH1F *h_xsieve1 = new TH1F("h_xsieve1",";xSieve[cm]",250,-14.0,14.0); 
@@ -80,6 +89,7 @@ void plotOpticsCompare(const char *nrun1,const char *nrun2, double foilPOS){
   TH1F *h_xsieve2_all = new TH1F("h_xsieve2_all",";xSieve[cm]",250,-14.0,14.0); 
   TH1F *h_ysieve2_all = new TH1F("h_ysieve2_all",";ySieve[cm]",250,-9.0,9.0);
   TH2F *h2_sieve2_all = new TH2F("h2_sieve2_all",sieve_string3.Data(),250,-9.0,9.0,250,-14.0,14.0);
+  TH1F *h_Vy2_all = new TH1F("h_Vy2_all",";yTar [cm];",100,-5,5);
   
   TH1F *h_z2 = new TH1F("h_z2",";P.react.z [cm]",100,-14,14);
   TH1F *h_xsieve2 = new TH1F("h_xsieve2",";xSieve[cm]",250,-14.0,14.0); 
@@ -103,8 +113,8 @@ void plotOpticsCompare(const char *nrun1,const char *nrun2, double foilPOS){
   TH2F *h2_ypVz_c2 = new TH2F("h2_ypVz_c2","central sieve hole-sk;zVertex [cm];ypTar",100,-14,14,100,-0.05,0.05);
   TH2F *h2_sieve_c2 = new TH2F("h2_sieve_c2","central sieve hole-sk;ySieve [cm];xSieve[cm]",200,-7.0,7.0,200,-12.0,12.0);
   TH2F *h2_xpVd_c2 = new TH2F("h2_xpVd_c2","central sieve hole-sk;delta;xpfp",100,-15,20,100,-0.15,0.15);
-
-
+  
+  
   TH2F *h2_ypVzSlice[8];
 
 
@@ -113,6 +123,7 @@ void plotOpticsCompare(const char *nrun1,const char *nrun2, double foilPOS){
   tt1->Draw("P.extcor.xsieve>>h_xsieve1_all",cut_nom);
   tt1->Draw("P.extcor.ysieve>>h_ysieve1_all",cut_nom);
   tt1->Draw("P.extcor.xsieve:P.extcor.ysieve>>h2_sieve1_all",cut_nom);
+  tt1->Draw("P.gtr.y>>h_Vy1_all",cut_nom);
   
   tt1->Draw("P.gtr.ph:P.react.z>>h2_ypVz1",cut);
   tt1->Draw("P.dc.y_fp:P.dc.x_fp>>h2_yfpVxfp1",cut);
@@ -143,6 +154,7 @@ void plotOpticsCompare(const char *nrun1,const char *nrun2, double foilPOS){
   tt2->Draw("P.extcor.xsieve>>h_xsieve2_all",cut_nom);
   tt2->Draw("P.extcor.ysieve>>h_ysieve2_all",cut_nom);
   tt2->Draw("P.extcor.xsieve:P.extcor.ysieve>>h2_sieve2_all",cut_nom);
+  tt2->Draw("P.gtr.y>>h_Vy2_all",cut_nom);
   
   tt2->Draw("P.gtr.ph:P.react.z>>h2_ypVz2",cut);
   tt2->Draw("P.dc.y_fp:P.dc.x_fp>>h2_yfpVxfp2",cut);
@@ -169,6 +181,21 @@ void plotOpticsCompare(const char *nrun1,const char *nrun2, double foilPOS){
   tt2->Draw("P.extcor.xsieve:P.extcor.ysieve>>h2_sieve_c2",cut && cutCentral);
   tt2->Draw("P.dc.xp_fp:P.gtr.dp>>h2_xpVd_c2",cut && cutCentral);
 
+  TH1F *h_z_res = new TH1F("h_z_res","Residual P.react.z",100,-14,14);
+  h_z_res->Add(h_z1_all,h_z2_all,-1);
+
+  TH1F *h_xsieve_res = new TH1F("h_xsieve_res","Residual xsieve foil",250, -14,14);
+  h_xsieve_res->Add(h_xsieve1,h_xsieve2,-1);
+
+  TH1F *h_ysieve_res = new TH1F("h_ysieve_res","Residual ysieve foil",250, -9,9);
+  h_ysieve_res->Add(h_ysieve1,h_ysieve2,-1);
+
+  TH1F *h_xsieve_all_res = new TH1F("h_xsieve_all_res","Residual xsieve all foils",250, -14,14);
+  h_xsieve_all_res->Add(h_xsieve1_all,h_xsieve2_all,-1);
+
+  TH1F *h_ysieve_all_res = new TH1F("h_ysieve_all_res","Residual ysieve all foils",250, -9,9);
+  h_ysieve_all_res->Add(h_ysieve1_all,h_ysieve2_all,-1);
+  
   for (int ii=0; ii<8; ii++){
     h2_ypVzSlice[ii] = new TH2F(Form("h2_ypVzSlice_%i",ii),Form("xfp=%i cm +/- 0.5cm;zVertex [cm]; ypTar",ii+1),100,-15,15,100,-0.05,0.05);
     TCut slice = Form("abs(P.dc.x_fp - (%i+1))<0.5",ii);
@@ -282,6 +309,37 @@ void plotOpticsCompare(const char *nrun1,const char *nrun2, double foilPOS){
   canvas2->Print((pdf_file_name +"(").c_str());
 
   canvas2->cd(1);
+  h_z_res->SetLineWidth(2);
+  h_z_res->SetLineColor(1);
+  h_z_res->Draw("");
+  gPad->SetGrid();
+  canvas2->Print((pdf_file_name +"(").c_str());
+
+  canvas2->cd(1);
+  h_Vy1->SetLineWidth(2);
+  h_Vy1->SetLineColor(2);
+  h_Vy1->GetYaxis()->SetRangeUser(0.0,h_Vy2->GetMaximum()+200);
+  h_Vy1->Draw();
+  h_Vy2->SetLineWidth(2);
+  h_Vy2->SetLineColor(4);
+  h_Vy2->Draw("same");
+  leg1->Draw("same");
+  gPad->SetGrid();
+  canvas2->Print((pdf_file_name +"(").c_str());
+
+  canvas2->cd(1);
+  h_Vy1_all->SetLineWidth(2);
+  h_Vy1_all->SetLineColor(2);
+  h_Vy1_all->GetYaxis()->SetRangeUser(0.0,h_Vy2_all->GetMaximum()+200);
+  h_Vy1_all->Draw();
+  h_Vy2_all->SetLineWidth(2);
+  h_Vy2_all->SetLineColor(4);
+  h_Vy2_all->Draw("same");
+  leg1->Draw("same");
+  gPad->SetGrid();
+  canvas2->Print((pdf_file_name +"(").c_str());
+  
+  canvas2->cd(1);
   h_xsieve1->SetLineWidth(2);
   h_xsieve1->SetTitle(foil_pos);
   h_xsieve1->SetLineColor(2);
@@ -376,6 +434,34 @@ void plotOpticsCompare(const char *nrun1,const char *nrun2, double foilPOS){
     ys_line_3[nys]->Draw();
     ys_text_3[nys]->Draw();
   }
+  gPad->SetGrid();
+  canvas2->Print((pdf_file_name +"(").c_str());
+
+  canvas2->cd(1);
+  h_xsieve_res->SetLineWidth(2);
+  h_xsieve_res->SetLineColor(1);
+  h_xsieve_res->Draw("");
+  gPad->SetGrid();
+  canvas2->Print((pdf_file_name +"(").c_str());
+
+  canvas2->cd(1);
+  h_ysieve_res->SetLineWidth(2);
+  h_ysieve_res->SetLineColor(1);
+  h_ysieve_res->Draw("");
+  gPad->SetGrid();
+  canvas2->Print((pdf_file_name +"(").c_str());
+
+  canvas2->cd(1);
+  h_xsieve_all_res->SetLineWidth(2);
+  h_xsieve_all_res->SetLineColor(1);
+  h_xsieve_all_res->Draw("");
+  gPad->SetGrid();
+  canvas2->Print((pdf_file_name +"(").c_str());
+
+  canvas2->cd(1);
+  h_ysieve_all_res->SetLineWidth(2);
+  h_ysieve_all_res->SetLineColor(1);
+  h_ysieve_all_res->Draw("");
   gPad->SetGrid();
   canvas2->Print((pdf_file_name +"(").c_str());
   

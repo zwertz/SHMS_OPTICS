@@ -105,7 +105,8 @@ void make_hist_shms_optics_v2(Int_t nrun=1813,Bool_t CutYtarFlag=kTRUE,Bool_t Cu
   TString inputroot;
   TString outputhist;
   //inputroot = Form("ROOTfiles/LAD_COIN/PRODUCTION/LAD_Optics_%s_0_0_%d.root",OpticsID.Data(),FileID);
-  inputroot = Form("ROOTfiles/LAD_COIN/PRODUCTION/LAD_Optics_%s_0_0_%d_newfit_global_zbin_allA1n.root",OpticsID.Data(),FileID);
+  //inputroot = Form("ROOTfiles/LAD_COIN/PRODUCTION/LAD_Optics_%s_0_0_%d_newfit_global_zbin_allA1n.root",OpticsID.Data(),FileID);
+  inputroot = Form("ROOTfiles/LAD_COIN/PRODUCTION/LAD_Optics_%s_0_0_%d_newfit_lad_shms.root",OpticsID.Data(),FileID);
 
   outputhist=Form("hist/Optics_%s_%d_hist_v2.root",OpticsID.Data(),FileID);
   cout << " input root = " << inputroot << endl;
