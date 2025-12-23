@@ -3,16 +3,21 @@ void plotOpticsCompare(const char *nrun1,const char *nrun2, double foilPOS){
   //read the input file
   //TFile *f = new TFile(Form("/net/cdaq/cdaql3data/cdaq/hallc-online/ROOTfiles/coin_replay_production_%i_-1.root",nrun));
   //TFile *f1 = new TFile(Form("/lustre24/expphy/volatile/hallc/c-lad/ewertz/lad_replay/ROOTfiles/LAD_COIN/PRODUCTION/LAD_Optics_%s_0_0_-1_newfit_global_zbin_allA1n.root",nrun1));
+  //TFile *f1 = new TFile(Form("/lustre24/expphy/volatile/hallc/c-lad/ewertz/lad_replay/ROOTfiles/LAD_COIN/PRODUCTION/LAD_Optics_%s_0_0_-1_newfit_global_zbin_allA1n_before.root",nrun1));
+  //TFile *f1 = new TFile(Form("/lustre24/expphy/volatile/hallc/c-lad/ewertz/lad_replay/ROOTfiles/LAD_COIN/PRODUCTION/LAD_Optics_%s_0_0_-1_newfit_global_zbin_allA1n_after.root",nrun1));
   TFile *f1 = new TFile(Form("/lustre24/expphy/volatile/hallc/c-lad/ewertz/lad_replay/ROOTfiles/LAD_COIN/PRODUCTION/LAD_Optics_%s_0_0_-1_newfit_lad_shms.root",nrun2));
-  TFile *f2 = new TFile(Form("/lustre24/expphy/volatile/hallc/c-lad/ewertz/lad_replay/ROOTfiles/LAD_COIN/PRODUCTION/LAD_Optics_%s_0_0_-1_newfit_lad_shms_v2.root",nrun2));
+  //TFile *f2 = new TFile(Form("/lustre24/expphy/volatile/hallc/c-lad/ewertz/lad_replay/ROOTfiles/LAD_COIN/PRODUCTION/LAD_Optics_%s_0_0_-1_newfit_lad_shms_v2.root",nrun2));
   //TFile *f2 = new TFile(Form("/lustre24/expphy/volatile/hallc/c-lad/ewertz/lad_replay/ROOTfiles/LAD_COIN/PRODUCTION/LAD_Optics_%s_0_0_-1_newfit_lad_shms_v3.root",nrun2));
   //TFile *f2 = new TFile(Form("/lustre24/expphy/volatile/hallc/c-lad/ewertz/lad_replay/ROOTfiles/LAD_COIN/PRODUCTION/LAD_Optics_%s_0_0_-1_newfit_lad_shms_v4.root",nrun2));
+  TFile *f2 = new TFile(Form("/lustre24/expphy/volatile/hallc/c-lad/ewertz/lad_replay/ROOTfiles/LAD_COIN/PRODUCTION/LAD_Optics_%s_0_0_-1_newfit_lad_shms_v5.root",nrun2));
   TTree *tt1 = (TTree*)f1->Get("T");
   TTree *tt2 = (TTree*)f2->Get("T");
 
-  //TString out_string1("newfit_global_zbin_allA1n");
+  //TString out_string1("newfit_global_zbin_allA1n_after");
+  //TString out_string2("before_after");
   TString out_string1("newfit_lad_shms");
-  TString out_string2("lad_shms_v2");
+  //TString out_string2("lad_shms_v5");
+  TString out_string2("v1_v5");
   
  //foil cut
   double foilmin = foilPOS-2.5;

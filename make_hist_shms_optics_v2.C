@@ -106,7 +106,10 @@ void make_hist_shms_optics_v2(Int_t nrun=1813,Bool_t CutYtarFlag=kTRUE,Bool_t Cu
   TString outputhist;
   //inputroot = Form("ROOTfiles/LAD_COIN/PRODUCTION/LAD_Optics_%s_0_0_%d.root",OpticsID.Data(),FileID);
   //inputroot = Form("ROOTfiles/LAD_COIN/PRODUCTION/LAD_Optics_%s_0_0_%d_newfit_global_zbin_allA1n.root",OpticsID.Data(),FileID);
-  inputroot = Form("ROOTfiles/LAD_COIN/PRODUCTION/LAD_Optics_%s_0_0_%d_newfit_lad_shms.root",OpticsID.Data(),FileID);
+  //inputroot = Form("ROOTfiles/LAD_COIN/PRODUCTION/LAD_Optics_%s_0_0_%d_newfit_global_zbin_allA1n_after.root",OpticsID.Data(),FileID);
+  //inputroot = Form("ROOTfiles/LAD_COIN/PRODUCTION/LAD_Optics_%s_0_0_%d_newfit_global_zbin_allA1n_before.root",OpticsID.Data(),FileID);
+  //inputroot = Form("ROOTfiles/LAD_COIN/PRODUCTION/LAD_Optics_%s_0_0_%d_newfit_lad_shms.root",OpticsID.Data(),FileID);
+  inputroot = Form("ROOTfiles/LAD_COIN/PRODUCTION/LAD_Optics_%s_0_0_%d_newfit_lad_shms_v5.root",OpticsID.Data(),FileID);
 
   outputhist=Form("hist/Optics_%s_%d_hist_v2.root",OpticsID.Data(),FileID);
   cout << " input root = " << inputroot << endl;
@@ -267,16 +270,28 @@ void make_hist_shms_optics_v2(Int_t nrun=1813,Bool_t CutYtarFlag=kTRUE,Bool_t Cu
   HList.Add(hYtarYptar);
   TH2F *hZtarDelta = new TH2F("hZtarDelta",Form("Run %d ; Ztar ; Delta",nrun),100,-35.,25.,100,-15.,25.);
   HList.Add(hZtarDelta);
-  TH1F *hxbpm_tar = new TH1F("hxbpm_tar",Form("Run %d ; Xbpm_tar ; Counts",nrun),100,-2.,2.);
+  TH1F *hxbpm_tar = new TH1F("hxbpm_tar",Form("Run %d ; Xbpm_tar ; Counts",nrun),150,-0.13,0.13);
   HList.Add(hxbpm_tar);
-  TH1F *hybpm_tar = new TH1F("hybpm_tar",Form("Run %d ; Ybpm_tar ; Counts",nrun),100,-2.,2.);
+  TH1F *hybpm_tar = new TH1F("hybpm_tar",Form("Run %d ; Ybpm_tar ; Counts",nrun),150,-0.13,0.13);
   HList.Add(hybpm_tar);
+
+  TH1F *hxbpm_tar_cut = new TH1F("hxbpm_tar_cut",Form("Run %d ; Xbpm_tar ; Counts",nrun),150,-0.13,0.13);
+  HList.Add(hxbpm_tar_cut);
+  TH1F *hybpm_tar_cut = new TH1F("hybpm_tar_cut",Form("Run %d ; Ybpm_tar ; Counts",nrun),150,-0.13,0.13);
+  HList.Add(hybpm_tar_cut);
+
+  TH1F *hreactx = new TH1F("hreactx",Form("Run %d ; reactx ; Counts",nrun),100,-0.2,0.2);
+  HList.Add(hreactx);
+
+  TH1F *hreacty = new TH1F("hreacty",Form("Run %d ; reacty ; Counts",nrun),100,-0.2,0.2);
+  HList.Add(hreacty);
 
   //added text to read in matrix elements directly:
   //parse the input matrix elements
   //string coeffsfilename="NewFits/hsv_fit_global.dat";
   //string coeffsfilename="NewFits/newfit_global_zbin_allA1n.dat";
-  string coeffsfilename="NewFits/newfit_lad_shms_nozero.dat";
+  //string coeffsfilename="NewFits/newfit_lad_shms_nozero.dat";
+  string coeffsfilename="NewFits/newfit_lad_shms_v5_nozero.dat";
   cout << "New Matrix incoming line 279" << endl;
   ifstream coeffsfile(coeffsfilename.c_str());
   TString currentline;
@@ -395,7 +410,7 @@ void make_hist_shms_optics_v2(Int_t nrun=1813,Bool_t CutYtarFlag=kTRUE,Bool_t Cu
    for (int i = 0; i < nentries; i++) {
      tsimc->GetEntry(i);
      if (i%50000==0) cout << " Entry = " << i << endl;
-     if (etracknorm>.8 && sumnpe > 6. && delta>-10 && delta<10) {
+     if (etracknorm>.8 && sumnpe > 6. && delta>-15 && delta<24) {
        hxbpm_tar->Fill(xbpm_tar);
        hybpm_tar->Fill(ybpm_tar);		  
      }} //
@@ -450,11 +465,23 @@ void make_hist_shms_optics_v2(Int_t nrun=1813,Bool_t CutYtarFlag=kTRUE,Bool_t Cu
     if (etracknorm>.8) hngsum->Fill(sumnpe);
     //cout << " Sumnpe: " << sumnpe << " delta_per: " << endl;
     //if (sumnpe > 6. && delta_per>-15 && delta_per<24) {
-    if (sumnpe > 6. && delta>-15 && delta<24) {
+
+    //Boolean for BPM position for just LAD optics data. For some reason for one of the optics run the position lock was not on. So we are going to cut out this data.
+    //Conditional directly below is being altered
+    //Boolean for this check is hard-coded based on uncut plot and EPICS BPM information
+    //E. Wertz
+
+    bool bpm_check = xbpm_tar>-0.5 && xbpm_tar<0.0 && ybpm_tar <0.02;
+    
+    if (sumnpe > 6. && delta>-15 && delta<24&&bpm_check) {
       //if (delta_per>-10 && delta_per<24) hytar->Fill(ytartemp);
       hytar->Fill(ytar);
       hztar->Fill(reactz);
+      hreactx->Fill(reactx);
+      hreacty->Fill(reacty);
       hztarg->Fill(ztarg);
+       hxbpm_tar_cut->Fill(xbpm_tar);
+       hybpm_tar_cut->Fill(ybpm_tar);		  
       // hztarCalc->Fill(ztarCalc);
       //if (delta>-10 && delta<24) hztar->Fill(reactz);
       //if (delta_per>-10 && delta_per<24) hztar->Fill(ztarg);

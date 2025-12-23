@@ -46,9 +46,9 @@ void fit_opt_matrix_v2(Int_t nSettings = 1) {
    TFile *fout = new TFile(outputhist,"RECREATE");
 
    
-  int nfit=0,npar,nfit_max=25500,npar_final=0,max_order=6,norder;
-  Int_t MaxPerBin=250;
-  Int_t MaxZtarPerBin=8500;
+  int nfit=0,npar,nfit_max=28500,npar_final=0,max_order=6,norder;
+  Int_t MaxPerBin=300;
+  Int_t MaxZtarPerBin=9500;
 
   //
   TH1F *hDelta = new TH1F("hDelta","Delta ",20,-10.,30.);
@@ -342,7 +342,7 @@ void fit_opt_matrix_v2(Int_t nSettings = 1) {
     }
     //
     for (Int_t nf=0;nf<maxFoils;nf++) {//max foils
-      Max_Per_Run_Per_Foil[nf] = 13000;//check this number?
+      Max_Per_Run_Per_Foil[nf] = 9500;//check this number?
       Ztar_Cnts[nf]=0;
       for (Int_t nd=0;nd<maxDel;nd++) {//max del cut
 	for (Int_t ny=0;ny<nysieve;ny++) {	

@@ -121,7 +121,10 @@ gStyle->SetPalette(1,0);
    TString inputroot;
    TString outputroot;
    //inputroot = Form("ROOTfiles/LAD_COIN/PRODUCTION/LAD_Optics_%s_0_0_%d_newfit_global_zbin_allA1n.root",OpticsID.Data(),FileID);
-   inputroot = Form("ROOTfiles/LAD_COIN/PRODUCTION/LAD_Optics_%s_0_0_%d_newfit_lad_shms.root",OpticsID.Data(),FileID);
+   //inputroot = Form("ROOTfiles/LAD_COIN/PRODUCTION/LAD_Optics_%s_0_0_%d_newfit_lad_shms.root",OpticsID.Data(),FileID);
+   //inputroot = Form("ROOTfiles/LAD_COIN/PRODUCTION/LAD_Optics_%s_0_0_%d_newfit_global_zbin_allA1n_before.root",OpticsID.Data(),FileID);
+   //inputroot = Form("ROOTfiles/LAD_COIN/PRODUCTION/LAD_Optics_%s_0_0_%d_newfit_global_zbin_allA1n_after.root",OpticsID.Data(),FileID);
+   inputroot = Form("ROOTfiles/LAD_COIN/PRODUCTION/LAD_Optics_%s_0_0_%d_newfit_lad_shms_v5.root",OpticsID.Data(),FileID);
    outputroot= Form("hist/Optics_%s_%d_fit_tree.root",OpticsID.Data(),FileID);
   //
  //
@@ -242,7 +245,12 @@ TTree *tsimc = (TTree*) fsimc->Get("T");
    tsimc->SetBranchAddress("P.extcor.ysieve",&ysieve);
  Double_t  xsieve;
    tsimc->SetBranchAddress("P.extcor.xsieve",&xsieve);
-   Double_t xptarT,ytarT,yptarT,ysieveT,xsieveT,ztarT,ztar,xtarT;
+ Double_t  xbpm_tar;
+   tsimc->SetBranchAddress("P.rb.raster.fr_xbpm_tar",&xbpm_tar);
+   Double_t  ybpm_tar;
+   tsimc->SetBranchAddress("P.rb.raster.fr_ybpm_tar",&ybpm_tar);
+ Double_t xptarT,ytarT,yptarT,ysieveT,xsieveT,ztarT,ztar,xtarT;
+
    //
  TFile hroot(outputroot,"recreate");
  TTree *otree = new TTree("TFit","FitTree");
@@ -267,6 +275,8 @@ TTree *tsimc = (TTree*) fsimc->Get("T");
  otree->Branch("yfp",&yfp);
  otree->Branch("reactxcalc",&reactx);
  otree->Branch("reactycalc",&reacty);
+ otree->Branch("xbpm_tar",&xbpm_tar);
+ otree->Branch("ybpm_tar",&ybpm_tar);
    //
 	Double_t zdis_sieve = 253.;
         Double_t zdis_hbmagexit_coll=40.;
@@ -279,8 +289,14 @@ TTree *tsimc = (TTree*) fsimc->Get("T");
  CentAngle=CentAngle*3.14159/180.;
 	for (int i = 0; i < nentries; i++) {
       		tsimc->GetEntry(i);
+		//Boolean for BPM position for just LAD optics data. For some reason for one of the optics run the position lock was not on. So we are going to cut out this data.
+		//Conditional directly below is being altered
+		//Boolean for this check is hard-coded based on uncut plot and EPICS BPM information
+		//E. Wertz
+
+		bool bpm_check = xbpm_tar>-0.5 && xbpm_tar<0.0 && ybpm_tar <0.02;
                 if (i%50000==0) cout << " Entry = " << i << endl;
-		if (etracknorm>.8 && sumnpe > 6. && delta>-15 && delta<24) {
+		if (etracknorm>.8 && sumnpe > 6. && delta>-15 && delta<24&&bpm_check) {
 		  Int_t nf_found=-1, nd_found=-1,ny_found=-1,nx_found=-1;
 	         for  (UInt_t nf=0;nf<ytar_delta_cut.size();nf++) {
 		   if (ytar_delta_cut[nf]->IsInside(ytar,delta)) nf_found=nf;
